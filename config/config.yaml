@@ -1,0 +1,53 @@
+project:
+  country_iso3: ECU
+  currency: USD
+  canonical_grain: quarter
+
+paths:
+  data_raw: data/raw
+  data_staging: data/staging
+  data_mart: data/mart
+  runs: runs
+  logs: logs
+  duckdb_path: data/mart/ecuador_monitor.duckdb
+
+comparability:
+  enemdu_break:
+    start: 2020-01-01
+    end: 2021-05-31
+    note: >-
+      INEC warns that from 2020 through May 2021, ENEMDU methodological changes
+      affect historical comparability; trends crossing this window should be interpreted with caution.
+
+sources:
+  inec_wp_api:
+    base_url: https://www.ecuadorencifras.gob.ec/wp-json/wp/v2
+    user_agent: ec-pov-monitor/0.1
+    timeout_s: 60
+
+  inec_labor:
+    wp_search_terms:
+      - "Empleo"
+    max_pages: 30
+    include_regex: "Tabulados_Mercado_Laboral_EXCEL\\.xlsx"
+    exclude_regex: "BDD|SPSS|DATOS_ABIERTOS|Base_de_datos"
+
+  inec_poverty:
+    wp_search_terms:
+      - "Pobreza por Ingresos"
+      - "Pobreza por ingresos"
+      - "Pobrez"
+    max_pages: 30
+    include_regex: "Tabulados_pobreza_.*\\.zip"
+
+  world_bank_wdi:
+    base_url: https://api.worldbank.org/v2
+    indicators:
+      gdp_growth_pct: NY.GDP.MKTP.KD.ZG
+      inflation_cpi_pct: FP.CPI.TOTL.ZG
+      remittances_usd: BX.TRF.PWKR.CD.DT
+
+  world_bank_pip:
+    base_url: https://api.worldbank.org/pip/v1/pip
+    country: ECU
+    format: json
