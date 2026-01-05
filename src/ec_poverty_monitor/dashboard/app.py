@@ -1,13 +1,12 @@
 import datetime as dt
 import os
 from pathlib import Path
+import sys
 
 import altair as alt
 import duckdb
 import pandas as pd
 import streamlit as st
-
-from ec_poverty_monitor.pipeline import run_pipeline
 
 st.set_page_config(page_title="Ecuador Economy & Poverty Monitor", layout="wide")
 
@@ -32,6 +31,13 @@ if not duckdb_file.exists():
         config_path = Path(os.environ.get("ECMON_CONFIG_PATH", "config/config.yaml"))
         st.info("DuckDB file not found; building marts now…")
         try:
+            try:
+                from ec_poverty_monitor.pipeline import run_pipeline
+            except ModuleNotFoundError:
+                # When running as `streamlit run src/.../app.py`, `src/` may not be on sys.path.
+                sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+                from ec_poverty_monitor.pipeline import run_pipeline
+
             run_pipeline(config_path=config_path, force=False)
         except Exception as exc:
             st.error(f"Failed to build marts: {exc}")
