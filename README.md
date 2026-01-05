@@ -62,6 +62,23 @@ Alternative (direct Streamlit):
 poetry run streamlit run src/ec_poverty_monitor/dashboard/app.py
 ```
 
+## Deploy (Streamlit Community Cloud)
+
+This repo uses a `src/` layout, so Streamlit Cloud should run the root entrypoint:
+
+- Main file path: `app.py`
+
+Notes:
+
+- The dashboard expects `data/mart/ecuador_monitor.duckdb` to exist.
+- On Streamlit Cloud you can have the app build the marts on first load by setting:
+	- `ECMON_AUTOBUILD=1`
+	- (optional) `ECMON_CONFIG_PATH=config/config.yaml`
+
+Dependencies:
+
+- Streamlit Cloud installs from `requirements.txt`.
+
 ## Data sources (official)
 
 - INEC Ecuador en Cifras (ENEMDU employment posts + tabulados)

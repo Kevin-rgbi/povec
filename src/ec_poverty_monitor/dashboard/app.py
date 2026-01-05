@@ -1,10 +1,13 @@
 import datetime as dt
 import os
+from pathlib import Path
 
 import altair as alt
 import duckdb
 import pandas as pd
 import streamlit as st
+
+from ec_poverty_monitor.pipeline import run_pipeline
 
 st.set_page_config(page_title="Ecuador Economy & Poverty Monitor", layout="wide")
 
@@ -21,6 +24,21 @@ This dashboard reads local marts produced by the pipeline.
 
 default_duckdb_path = os.environ.get("ECMON_DUCKDB_PATH", "data/mart/ecuador_monitor.duckdb")
 duckdb_path = st.text_input("DuckDB path", value=default_duckdb_path)
+
+duckdb_file = Path(duckdb_path)
+if not duckdb_file.exists():
+    autobuild = os.environ.get("ECMON_AUTOBUILD", "").strip().lower() in {"1", "true", "yes"}
+    if autobuild:
+        config_path = Path(os.environ.get("ECMON_CONFIG_PATH", "config/config.yaml"))
+        st.info("DuckDB file not found; building marts now…")
+        try:
+            run_pipeline(config_path=config_path, force=False)
+        except Exception as exc:
+            st.error(f"Failed to build marts: {exc}")
+            st.stop()
+    else:
+        st.info("Run the pipeline first, or set ECMON_AUTOBUILD=1 to build marts automatically.")
+        st.stop()
 
 try:
     con = duckdb.connect(duckdb_path, read_only=True)
